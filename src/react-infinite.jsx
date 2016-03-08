@@ -50,7 +50,14 @@ var Infinite = React.createClass({
     isInfiniteLoading: React.PropTypes.bool,
     timeScrollStateLastsForAfterUserScrolls: React.PropTypes.number,
 
-    className: React.PropTypes.string
+    className: React.PropTypes.string,
+
+    //Custom: depend on data structures, so we don't need to
+    // 1) Create all children before rendering
+    // 2) Use unique keys for each child
+    cursor: React.PropTypes.object,
+
+    childRender: React.PropTypes.func
   },
   statics: {
     containerHeightScaleFactor(factor) {
@@ -87,7 +94,10 @@ var Infinite = React.createClass({
       isInfiniteLoading: false,
       timeScrollStateLastsForAfterUserScrolls: 150,
 
-      className: ''
+      className: '',
+
+      //Custom impl
+      cursor: null
     };
   },
 
@@ -234,10 +244,14 @@ var Infinite = React.createClass({
 
     var newState = {};
 
-    newState.numberOfChildren = React.Children.count(computedProps.children);
+    //newState.numberOfChildren = React.Children.count(computedProps.children);
+
+    //Custom: take future child count from cursor, not children
+    newState.numberOfChildren = computedProps.cursor.count();
+
     newState.infiniteComputer = infiniteHelpers.createInfiniteComputer(
       computedProps.elementHeight,
-      computedProps.children,
+      computedProps.cursor,
       computedProps.displayBottomUpwards
     );
 
@@ -288,7 +302,8 @@ var Infinite = React.createClass({
       }
     }
 
-    const hasLoadedMoreChildren = React.Children.count(this.props.children) !== React.Children.count(prevProps.children);
+    //Custom using cursors instead of children
+    const hasLoadedMoreChildren = this.props.cursor.count() !== prevProps.cursor.count();
     if (hasLoadedMoreChildren) {
       var newApertureState = infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(
         this.state,
@@ -404,12 +419,17 @@ var Infinite = React.createClass({
 
   render(): ReactElement<any, any, any> {
     var displayables;
-    if (React.Children.count(this.computedProps.children) > 1) {
-      displayables = this.computedProps.children.slice(this.state.displayIndexStart,
+
+    if (this.computedProps.cursor.count() > 1) {
+      displayables = this.computedProps.cursor.slice(this.state.displayIndexStart,
                                                        this.state.displayIndexEnd + 1);
     } else {
-      displayables = this.computedProps.children;
+      displayables = this.computedProps.cursor;
     }
+
+    var displayablesRender = displayables.map((displayable, i) => {
+      return this.props.childRender(displayable, i);
+    });
 
     var infiniteScrollStyles = {};
     if (this.state.isScrolling) {
@@ -444,7 +464,7 @@ var Infinite = React.createClass({
         <div ref="topSpacer"
              style={this.buildHeightStyle(topSpacerHeight)}/>
         {this.computedProps.displayBottomUpwards && loadingSpinner}
-          {displayables}
+          {displayablesRender}
         {!this.computedProps.displayBottomUpwards && loadingSpinner}
         <div ref="bottomSpacer"
              style={this.buildHeightStyle(bottomSpacerHeight)}/>

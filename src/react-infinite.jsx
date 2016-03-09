@@ -225,7 +225,7 @@ var Infinite = React.createClass({
         return {
           height: this.computedProps.containerHeight,
           overflowX: 'hidden',
-          overflowY: 'scroll',
+          overflowY: 'auto',
           WebkitOverflowScrolling: 'touch'
         };
       };
@@ -243,8 +243,6 @@ var Infinite = React.createClass({
     var utils = this.generateComputedUtilityFunctions(props);
 
     var newState = {};
-
-    //newState.numberOfChildren = React.Children.count(computedProps.children);
 
     //Custom: take future child count from cursor, not children
     newState.numberOfChildren = computedProps.cursor.count();
@@ -465,6 +463,7 @@ var Infinite = React.createClass({
              style={this.buildHeightStyle(topSpacerHeight)}/>
         {this.computedProps.displayBottomUpwards && loadingSpinner}
           {displayablesRender}
+          {this.props.renderLoadMore()}
         {!this.computedProps.displayBottomUpwards && loadingSpinner}
         <div ref="bottomSpacer"
              style={this.buildHeightStyle(bottomSpacerHeight)}/>

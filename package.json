@@ -1,6 +1,6 @@
 {
   "name": "@split-software/react-infinite",
-  "version": "0.8.0",
+  "version": "1.0.0",
   "description": "A browser-ready efficient scrolling container based on UITableView",
   "main": "build/react-infinite.js",
   "repository": {

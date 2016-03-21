@@ -1,4 +1,16 @@
-var ListItem = React.createClass({
+
+function loadArray(start, end) {
+    let dataArray = [];
+
+    for(let i=start; i < end; i++) {
+        dataArray.push(i);
+    }
+
+    return dataArray;
+}
+
+// Agregar al Infinite doc de *childRender, *cursor, *
+let ListItem = React.createClass({
     getDefaultProps: function() {
         return {
             height: 50,
@@ -11,42 +23,13 @@ var ListItem = React.createClass({
                 height: this.props.height,
                 lineHeight: this.props.lineHeight
             }
-        }>
-            List Item {this.props.index}
+        } key={this.props.key}>
+            List Item {this.props.value}
         </div>;
     }
 });
 
-var InfiniteList = React.createClass({
-    getInitialState: function() {
-        return {
-            elements: this.buildElements(0, 50),
-            isInfiniteLoading: false
-        }
-    },
-
-    buildElements: function(start, end) {
-        var elements = [];
-        for (var i = start; i < end; i++) {
-            elements.push(<ListItem key={i} index={i}/>)
-        }
-        return elements;
-    },
-
-    handleInfiniteLoad: function() {
-        var that = this;
-        this.setState({
-            isInfiniteLoading: true
-        });
-        setTimeout(function() {
-            var elemLength = that.state.elements.length,
-                newElements = that.buildElements(elemLength, elemLength + 100);
-            that.setState({
-                isInfiniteLoading: false,
-                elements: that.state.elements.concat(newElements)
-            });
-        }, 2500);
-    },
+let InfiniteList = React.createClass({
 
     elementInfiniteLoad: function() {
         return <div className="infinite-list-item">
@@ -54,128 +37,72 @@ var InfiniteList = React.createClass({
         </div>;
     },
 
+    handleChildRender: function(value, index) {
+        return (
+            <ListItem index={index} value={value}/>
+        );
+    },
+
     render: function() {
-        return <Infinite elementHeight={50}
-                         containerHeight={250}
-                         infiniteLoadBeginEdgeOffset={200}
-                         onInfiniteLoad={this.handleInfiniteLoad}
+        return <Infinite elementHeight={this.props.elementHeight}
+                         containerHeight={this.props.containerHeight}
+                         infiniteLoadBeginEdgeOffset={this.props.infiniteLoadBeginEdgeOffset}
+                         timeScrollStateLastsForAfterUserScrolls={this.props.timeScrollStateLastsForAfterUserScrolls}
+                         onInfiniteLoad={this.props.handleInfiniteLoad}
                          loadingSpinnerDelegate={this.elementInfiniteLoad()}
-                         isInfiniteLoading={this.state.isInfiniteLoading}
-                         timeScrollStateLastsForAfterUserScrolls={1000}
-                         >
-                    {this.state.elements}
-                </Infinite>;
+                         isInfiniteLoading={this.props.isInfiniteLoading}
+                         cursor={this.props.cursor}
+                         childRender={this.handleChildRender}
+                         />;
     }
 });
 
-var AdditionInfiniteList = React.createClass({
-    componentDidMount: function() {
-        setTimeout(this.handleInfiniteLoad, 3000);
-    },
+let InfiniteListStore = React.createClass({
+
     getInitialState: function() {
         return {
-            elements: this.buildElements(0, 2),
             isInfiniteLoading: false
         }
     },
 
-    buildElements: function(start, end) {
-        var elements = [];
-        for (var i = start; i < end; i++) {
-            elements.push(<ListItem key={i} index={i}/>)
-        }
-        return elements;
-    },
-
-    handleInfiniteLoad: function() {
-        var that = this;
-        this.setState({
-            isInfiniteLoading: true
-        });
-        setTimeout(function() {
-            var elemLength = that.state.elements.length,
-                newElements = that.buildElements(elemLength, elemLength + 100);
-            that.setState({
-                isInfiniteLoading: false,
-                elements: that.state.elements.concat(newElements)
-            });
-        }, 2500);
-    },
-
-    elementInfiniteLoad: function() {
-        return <div className="infinite-list-item">
-            Loading...
-        </div>;
-    },
-
-    render: function() {
-        return <Infinite elementHeight={50}
-                         containerHeight={250}
-                         loadingSpinnerDelegate={this.elementInfiniteLoad()}
-                         isInfiniteLoading={this.state.isInfiniteLoading}
-                         timeScrollStateLastsForAfterUserScrolls={1000}
-                         >
-                    {this.state.elements}
-                </Infinite>;
-    }
-});
-
-var VariableInfiniteList = React.createClass({
-    getInitialState: function() {
+    buildProps: function() {
         return {
-            elementHeights: this.generateVariableElementHeights(100),
-            isInfiniteLoading: false
+            elementHeight: 50,
+            containerHeight: 250,
+            infiniteLoadBeginEdgeOffset: 200,
+            timeScrollStateLastsForAfterUserScrolls: 1000,
+            cursor: this.props.store.cursor(),
+            handleInfiniteLoad: this.handleInfiniteLoad,
+            isInfiniteLoading: this.state.isInfiniteLoading
         };
     },
-    generateVariableElementHeights: function(number, minimum, maximum) {
-        minimum = minimum || 40;
-        maximum = maximum || 100;
-        var heights = [];
-        for (var i = 0; i < number; i++) {
-            heights.push(minimum + Math.floor(Math.random() * (maximum - minimum)));
-        }
-        return heights;
-    },
+
     handleInfiniteLoad: function() {
-        var that = this;
+        let count = this.props.store.cursor().count();
+
         this.setState({
             isInfiniteLoading: true
         });
-        setTimeout(function() {
-            var newElements = that.generateVariableElementHeights(100);
-            that.setState({
-                isInfiniteLoading: false,
-                elementHeights: that.state.elementHeights.concat(newElements)
-            });
-        }, 2500);
-    },
-    elementInfiniteLoad: function() {
-        return <div className="infinite-list-item">
-            Loading...
-        </div>;
-    },
-    render: function() {
-        var elements = this.state.elementHeights.map(function(el, i) {
-            return <ListItem key={i} index={i} height={el} lineHeight={el.toString() + "px"}/>;
+
+        this.props.store.cursor().update(function() {
+            return Immutable.fromJS(loadArray(0, count + 100));
         });
-        return <Infinite elementHeight={this.state.elementHeights}
-                         containerHeight={250}
-                         infiniteLoadBeginEdgeOffset={200}
-                         onInfiniteLoad={this.handleInfiniteLoad}
-                         loadingSpinnerDelegate={this.elementInfiniteLoad()}
-                         isInfiniteLoading={this.state.isInfiniteLoading}
-                         timeScrollStateLastsForAfterUserScrolls={1000}
-                         >
-                    {elements}
-                </Infinite>;
+
+        // this has to be refactor, i have to simulate a ajax call in a best way
+        setTimeout(function() {
+            this.setState({
+                isInfiniteLoading: false
+            });
+        }.bind(this), 2500);
+    },
+
+    render: function() {
+        return (
+            <InfiniteList {...this.buildProps()}/>
+        );
     }
 });
 
+const store = immstruct('my_example_1', loadArray(0, 50));
 
-
-ReactDOM.render(<InfiniteList/>,
-        document.getElementById('infinite-example-one'));
-ReactDOM.render(<VariableInfiniteList/>,
-        document.getElementById('infinite-example-two'));
-ReactDOM.render(<AdditionInfiniteList/>,
-        document.getElementById('infinite-example-three'));
+ReactDOM.render(<InfiniteListStore store={store} />, document.getElementById('infinite-example-one'));

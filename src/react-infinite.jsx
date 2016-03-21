@@ -57,7 +57,7 @@ var Infinite = React.createClass({
     // 2) Use unique keys for each child
     cursor: React.PropTypes.object,
 
-    childRender: React.PropTypes.func
+    childRender: React.PropTypes.func.isRequired
   },
   statics: {
     containerHeightScaleFactor(factor) {
@@ -452,6 +452,8 @@ var Infinite = React.createClass({
         {this.state.isInfiniteLoading ? this.computedProps.loadingSpinnerDelegate : null}
       </div>;
 
+    var loadMore = this.props.renderLoadMore ? this.props.renderLoadMore() : null;
+
     // topSpacer and bottomSpacer take up the amount of space that the
     // rendered elements would have taken up otherwise
     return <div className={this.computedProps.className}
@@ -461,10 +463,10 @@ var Infinite = React.createClass({
       <div ref="smoothScrollingWrapper" style={infiniteScrollStyles}>
         <div ref="topSpacer"
              style={this.buildHeightStyle(topSpacerHeight)}/>
-        {this.computedProps.displayBottomUpwards && loadingSpinner}
+          {this.computedProps.displayBottomUpwards && loadingSpinner}
           {displayablesRender}
-          {this.props.renderLoadMore()}
-        {!this.computedProps.displayBottomUpwards && loadingSpinner}
+          {loadMore}
+          {!this.computedProps.displayBottomUpwards && loadingSpinner}
         <div ref="bottomSpacer"
              style={this.buildHeightStyle(bottomSpacerHeight)}/>
       </div>

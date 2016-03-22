@@ -23,8 +23,8 @@ let ListItem = React.createClass({
                 height: this.props.height,
                 lineHeight: this.props.lineHeight
             }
-        } key={this.props.index}>
-            List Item {this.props.value}
+        } key={this.props.key}>
+            List Item Papu {this.props.value}
         </div>;
     }
 });
@@ -39,7 +39,7 @@ let InfiniteList = React.createClass({
 
     handleChildRender: function(value, index) {
         return (
-            <ListItem index={index} value={value}/>
+            <ListItem key={index} value={value}/>
         );
     },
 

@@ -48,7 +48,7 @@ gulp.task('examples', function() {
 gulp.task('server', function() {
   gulp.src(__dirname)
       .pipe(server({
-        port: 8080,
+        port: 8888,
         directoryListing: true,
         livereload: {
           enable: true,

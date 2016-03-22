@@ -1,10 +1,10 @@
 (function(f){if(typeof exports==="object"&&typeof module!=="undefined"){module.exports=f()}else if(typeof define==="function"&&define.amd){define([],f)}else{var g;if(typeof window!=="undefined"){g=window}else if(typeof global!=="undefined"){g=global}else if(typeof self!=="undefined"){g=self}else{g=this}g.Infinite = f()}})(function(){var define,module,exports;return (function e(t,n,r){function s(o,u){if(!n[o]){if(!t[o]){var a=typeof require=="function"&&require;if(!u&&a)return a(o,!0);if(i)return i(o,!0);var f=new Error("Cannot find module '"+o+"'");throw f.code="MODULE_NOT_FOUND",f}var l=n[o]={exports:{}};t[o][0].call(l.exports,function(e){var n=t[o][1][e];return s(n?n:e)},l,l.exports,e,t,n,r)}return n[o].exports}var i=typeof require=="function"&&require;for(var o=0;o<r.length;o++)s(r[o]);return s})({1:[function(require,module,exports){
 (function (global){
-"use strict";function _objectWithoutProperties(e,t){var i={};for(var o in e)t.indexOf(o)>=0||Object.prototype.hasOwnProperty.call(e,o)&&(i[o]=e[o]);return i}var React=global.React||require("react"),ReactDOM=global.ReactDOM||require("react-dom");require("./utils/establish-polyfills");var scaleEnum=require("./utils/scaleEnum"),infiniteHelpers=require("./utils/infiniteHelpers"),_isFinite=require("lodash.isfinite"),preloadType=require("./utils/types").preloadType,checkProps=checkProps=require("./utils/checkProps"),Infinite=React.createClass({displayName:"Infinite",propTypes:{children:React.PropTypes.any,handleScroll:React.PropTypes.func,preloadBatchSize:preloadType,preloadAdditionalHeight:preloadType,elementHeight:React.PropTypes.oneOfType([React.PropTypes.number,React.PropTypes.arrayOf(React.PropTypes.number)]).isRequired,containerHeight:React.PropTypes.number,useWindowAsScrollContainer:React.PropTypes.bool,displayBottomUpwards:React.PropTypes.bool.isRequired,infiniteLoadBeginEdgeOffset:React.PropTypes.number,onInfiniteLoad:React.PropTypes.func,loadingSpinnerDelegate:React.PropTypes.node,isInfiniteLoading:React.PropTypes.bool,timeScrollStateLastsForAfterUserScrolls:React.PropTypes.number,className:React.PropTypes.string,cursor:React.PropTypes.object,childRender:React.PropTypes.func},statics:{containerHeightScaleFactor:function(e){if(!_isFinite(e))throw new Error("The scale factor must be a number.");return{type:scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR,amount:e}}},computedProps:{},utils:{},shouldAttachToBottom:!1,preservedScrollState:0,loadingSpinnerHeight:0,deprecationWarned:!1,getDefaultProps:function(){return{handleScroll:function(){},useWindowAsScrollContainer:!1,onInfiniteLoad:function(){},loadingSpinnerDelegate:React.createElement("div",null),displayBottomUpwards:!1,isInfiniteLoading:!1,timeScrollStateLastsForAfterUserScrolls:150,className:"",cursor:null}},getInitialState:function(){var e=this.recomputeInternalStateFromProps(this.props);this.computedProps=e.computedProps,this.utils=e.utils,this.shouldAttachToBottom=this.props.displayBottomUpwards;var t=e.newState;return t.scrollTimeout=void 0,t.isScrolling=!1,t},generateComputedProps:function(e){var t=e.containerHeight,i=e.preloadBatchSize,o=e.preloadAdditionalHeight,r=_objectWithoutProperties(e,["containerHeight","preloadBatchSize","preloadAdditionalHeight"]),n={};t="number"==typeof t?t:0,n.containerHeight=e.useWindowAsScrollContainer?window.innerHeight:t,void 0!==r.infiniteLoadBeginBottomOffset&&(n.infiniteLoadBeginEdgeOffset=r.infiniteLoadBeginBottomOffset,this.deprecationWarned||(console.error("Warning: React Infinite's infiniteLoadBeginBottomOffset prop\n        has been deprecated as of 0.6.0. Please use infiniteLoadBeginEdgeOffset.\n        Because this is a rather descriptive name, a simple find and replace\n        should suffice."),this.deprecationWarned=!0));var s={type:scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR,amount:.5},l=i&&i.type?i:s;"number"==typeof i?n.preloadBatchSize=i:l.type===scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR?n.preloadBatchSize=n.containerHeight*l.amount:n.preloadBatchSize=0;var a={type:scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR,amount:1},c=o&&o.type?o:a;return"number"==typeof o?n.preloadAdditionalHeight=o:c.type===scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR?n.preloadAdditionalHeight=n.containerHeight*c.amount:n.preloadAdditionalHeight=0,Object.assign(r,n)},generateComputedUtilityFunctions:function(e){var t=this,i={};return i.getLoadingSpinnerHeight=function(){var e=0;if(t.refs&&t.refs.loadingSpinner){var i=ReactDOM.findDOMNode(t.refs.loadingSpinner);e=i.offsetHeight||0}return e},e.useWindowAsScrollContainer?(i.subscribeToScrollListener=function(){window.addEventListener("scroll",t.infiniteHandleScroll)},i.unsubscribeFromScrollListener=function(){window.removeEventListener("scroll",t.infiniteHandleScroll)},i.nodeScrollListener=function(){},i.getScrollTop=function(){return window.pageYOffset},i.setScrollTop=function(e){window.scroll(window.pageXOffset,e)},i.scrollShouldBeIgnored=function(){return!1},i.buildScrollableStyle=function(){return{}}):(i.subscribeToScrollListener=function(){},i.unsubscribeFromScrollListener=function(){},i.nodeScrollListener=this.infiniteHandleScroll,i.getScrollTop=function(){var e;return t.refs&&t.refs.scrollable&&(e=ReactDOM.findDOMNode(t.refs.scrollable)),e?e.scrollTop:0},i.setScrollTop=function(e){var i;t.refs&&t.refs.scrollable&&(i=ReactDOM.findDOMNode(t.refs.scrollable)),i&&(i.scrollTop=e)},i.scrollShouldBeIgnored=function(e){return e.target!==ReactDOM.findDOMNode(t.refs.scrollable)},i.buildScrollableStyle=function(){return{height:t.computedProps.containerHeight,overflowX:"hidden",overflowY:"auto",WebkitOverflowScrolling:"touch"}}),i},recomputeInternalStateFromProps:function(e){checkProps(e);var t=this.generateComputedProps(e),i=this.generateComputedUtilityFunctions(e),o={};return o.numberOfChildren=t.cursor.count(),o.infiniteComputer=infiniteHelpers.createInfiniteComputer(t.elementHeight,t.cursor,t.displayBottomUpwards),void 0!==t.isInfiniteLoading&&(o.isInfiniteLoading=t.isInfiniteLoading),o.preloadBatchSize=t.preloadBatchSize,o.preloadAdditionalHeight=t.preloadAdditionalHeight,o=Object.assign(o,infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(o,i.getScrollTop())),{computedProps:t,utils:i,newState:o}},componentWillReceiveProps:function(e){var t=this.recomputeInternalStateFromProps(e);this.computedProps=t.computedProps,this.utils=t.utils,this.setState(t.newState)},componentWillUpdate:function(){this.props.displayBottomUpwards&&(this.preservedScrollState=this.utils.getScrollTop()-this.loadingSpinnerHeight)},componentDidUpdate:function(e,t){if(this.loadingSpinnerHeight=this.utils.getLoadingSpinnerHeight(),this.props.displayBottomUpwards){var i=this.getLowestPossibleScrollTop();this.shouldAttachToBottom&&this.utils.getScrollTop()<i?this.utils.setScrollTop(i):e.isInfiniteLoading&&!this.props.isInfiniteLoading&&this.utils.setScrollTop(this.state.infiniteComputer.getTotalScrollableHeight()-t.infiniteComputer.getTotalScrollableHeight()+this.preservedScrollState)}var o=this.props.cursor.count()!==e.cursor.count();if(o){var r=infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(this.state,this.utils.getScrollTop());this.setState(r)}var n=o&&!this.hasAllVisibleItems()&&!this.state.isInfiniteLoading;n&&this.onInfiniteLoad()},componentDidMount:function(){if(this.utils.subscribeToScrollListener(),this.hasAllVisibleItems()||this.onInfiniteLoad(),this.props.displayBottomUpwards){var e=this.getLowestPossibleScrollTop();this.shouldAttachToBottom&&this.utils.getScrollTop()<e&&this.utils.setScrollTop(e)}},componentWillUnmount:function(){this.utils.unsubscribeFromScrollListener()},infiniteHandleScroll:function(e){this.utils.scrollShouldBeIgnored(e)||(this.computedProps.handleScroll(ReactDOM.findDOMNode(this.refs.scrollable)),this.handleScroll(this.utils.getScrollTop()))},manageScrollTimeouts:function(){this.state.scrollTimeout&&clearTimeout(this.state.scrollTimeout);var e=this,t=setTimeout(function(){e.setState({isScrolling:!1,scrollTimeout:void 0})},this.computedProps.timeScrollStateLastsForAfterUserScrolls);this.setState({isScrolling:!0,scrollTimeout:t})},getLowestPossibleScrollTop:function(){return this.state.infiniteComputer.getTotalScrollableHeight()-this.computedProps.containerHeight},hasAllVisibleItems:function(){return!(_isFinite(this.computedProps.infiniteLoadBeginEdgeOffset)&&this.state.infiniteComputer.getTotalScrollableHeight()<this.computedProps.containerHeight)},passedEdgeForInfiniteScroll:function(e){return this.computedProps.displayBottomUpwards?!this.shouldAttachToBottom&&e<this.computedProps.infiniteLoadBeginEdgeOffset:e>this.state.infiniteComputer.getTotalScrollableHeight()-this.computedProps.containerHeight-this.computedProps.infiniteLoadBeginEdgeOffset},onInfiniteLoad:function(){this.setState({isInfiniteLoading:!0}),this.computedProps.onInfiniteLoad()},handleScroll:function(e){this.shouldAttachToBottom=this.computedProps.displayBottomUpwards&&e>=this.getLowestPossibleScrollTop(),this.manageScrollTimeouts();var t=infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(this.state,e);this.passedEdgeForInfiniteScroll(e)&&!this.state.isInfiniteLoading?(this.setState(Object.assign({},t)),this.onInfiniteLoad()):this.setState(t)},buildHeightStyle:function(e){return{width:"100%",height:Math.ceil(e)}},render:function(){var e,t=this;e=this.computedProps.cursor.count()>1?this.computedProps.cursor.slice(this.state.displayIndexStart,this.state.displayIndexEnd+1):this.computedProps.cursor;var i=e.map(function(e,i){return t.props.childRender(e,i)}),o={};this.state.isScrolling&&(o.pointerEvents="none");var r=this.state.infiniteComputer.getTopSpacerHeight(this.state.displayIndexStart),n=this.state.infiniteComputer.getBottomSpacerHeight(this.state.displayIndexEnd);if(this.computedProps.displayBottomUpwards){var s=this.computedProps.containerHeight-this.state.infiniteComputer.getTotalScrollableHeight();s>0&&(r=s-this.loadingSpinnerHeight)}var l=void 0===this.computedProps.infiniteLoadBeginEdgeOffset?null:React.createElement("div",{ref:"loadingSpinner"},this.state.isInfiniteLoading?this.computedProps.loadingSpinnerDelegate:null);return React.createElement("div",{className:this.computedProps.className,ref:"scrollable",style:this.utils.buildScrollableStyle(),onScroll:this.utils.nodeScrollListener},React.createElement("div",{ref:"smoothScrollingWrapper",style:o},React.createElement("div",{ref:"topSpacer",style:this.buildHeightStyle(r)}),this.computedProps.displayBottomUpwards&&l,i,this.props.renderLoadMore(),!this.computedProps.displayBottomUpwards&&l,React.createElement("div",{ref:"bottomSpacer",style:this.buildHeightStyle(n)})))}});module.exports=Infinite,global.Infinite=Infinite;
+"use strict";function _objectWithoutProperties(e,t){var i={};for(var o in e)t.indexOf(o)>=0||Object.prototype.hasOwnProperty.call(e,o)&&(i[o]=e[o]);return i}var React=global.React||require("react"),ReactDOM=global.ReactDOM||require("react-dom");require("./utils/establish-polyfills");var scaleEnum=require("./utils/scaleEnum"),infiniteHelpers=require("./utils/infiniteHelpers"),_isFinite=require("lodash.isfinite"),_throttle=require("lodash.throttle"),preloadType=require("./utils/types").preloadType,checkProps=checkProps=require("./utils/checkProps"),Infinite=React.createClass({displayName:"Infinite",propTypes:{children:React.PropTypes.any,handleScroll:React.PropTypes.func,preloadBatchSize:preloadType,preloadAdditionalHeight:preloadType,elementHeight:React.PropTypes.oneOfType([React.PropTypes.number,React.PropTypes.arrayOf(React.PropTypes.number)]).isRequired,containerHeight:React.PropTypes.number,useWindowAsScrollContainer:React.PropTypes.bool,displayBottomUpwards:React.PropTypes.bool.isRequired,infiniteLoadBeginEdgeOffset:React.PropTypes.number,onInfiniteLoad:React.PropTypes.func,loadingSpinnerDelegate:React.PropTypes.node,isInfiniteLoading:React.PropTypes.bool,timeScrollStateLastsForAfterUserScrolls:React.PropTypes.number,className:React.PropTypes.string,cursor:React.PropTypes.object,childRender:React.PropTypes.func.isRequired},statics:{containerHeightScaleFactor:function(e){if(!_isFinite(e))throw new Error("The scale factor must be a number.");return{type:scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR,amount:e}}},computedProps:{},utils:{},shouldAttachToBottom:!1,preservedScrollState:0,loadingSpinnerHeight:0,deprecationWarned:!1,getDefaultProps:function(){return{handleScroll:function(){},useWindowAsScrollContainer:!1,onInfiniteLoad:function(){},loadingSpinnerDelegate:React.createElement("div",null),displayBottomUpwards:!1,isInfiniteLoading:!1,timeScrollStateLastsForAfterUserScrolls:150,className:"",cursor:null}},getInitialState:function(){var e=this.recomputeInternalStateFromProps(this.props);this.computedProps=e.computedProps,this.utils=e.utils,this.shouldAttachToBottom=this.props.displayBottomUpwards;var t=e.newState;return t.scrollTimeout=void 0,t.isScrolling=!1,t},generateComputedProps:function(e){var t=e.containerHeight,i=e.preloadBatchSize,o=e.preloadAdditionalHeight,r=_objectWithoutProperties(e,["containerHeight","preloadBatchSize","preloadAdditionalHeight"]),n={};t="number"==typeof t?t:0,n.containerHeight=e.useWindowAsScrollContainer?window.innerHeight:t,void 0!==r.infiniteLoadBeginBottomOffset&&(n.infiniteLoadBeginEdgeOffset=r.infiniteLoadBeginBottomOffset,this.deprecationWarned||(console.error("Warning: React Infinite's infiniteLoadBeginBottomOffset prop\n        has been deprecated as of 0.6.0. Please use infiniteLoadBeginEdgeOffset.\n        Because this is a rather descriptive name, a simple find and replace\n        should suffice."),this.deprecationWarned=!0));var s={type:scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR,amount:.5},l=i&&i.type?i:s;"number"==typeof i?n.preloadBatchSize=i:l.type===scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR?n.preloadBatchSize=n.containerHeight*l.amount:n.preloadBatchSize=0;var a={type:scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR,amount:1},c=o&&o.type?o:a;return"number"==typeof o?n.preloadAdditionalHeight=o:c.type===scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR?n.preloadAdditionalHeight=n.containerHeight*c.amount:n.preloadAdditionalHeight=0,Object.assign(r,n)},generateComputedUtilityFunctions:function(e){var t=this,i={};return i.getLoadingSpinnerHeight=function(){var e=0;if(t.refs&&t.refs.loadingSpinner){var i=ReactDOM.findDOMNode(t.refs.loadingSpinner);e=i.offsetHeight||0}return e},e.useWindowAsScrollContainer?(i.subscribeToScrollListener=function(){window.addEventListener("scroll",t.infiniteHandleScroll)},i.unsubscribeFromScrollListener=function(){window.removeEventListener("scroll",t.infiniteHandleScroll)},i.nodeScrollListener=function(){},i.getScrollTop=function(){return window.pageYOffset},i.setScrollTop=function(e){window.scroll(window.pageXOffset,e)},i.scrollShouldBeIgnored=function(){return!1},i.buildScrollableStyle=function(){return{}}):(i.subscribeToScrollListener=function(){},i.unsubscribeFromScrollListener=function(){},i.nodeScrollListener=this.infiniteHandleScroll,i.getScrollTop=function(){var e;return t.refs&&t.refs.scrollable&&(e=ReactDOM.findDOMNode(t.refs.scrollable)),e?e.scrollTop:0},i.setScrollTop=function(e){var i;t.refs&&t.refs.scrollable&&(i=ReactDOM.findDOMNode(t.refs.scrollable)),i&&(i.scrollTop=e)},i.scrollShouldBeIgnored=function(e){return e.target!==ReactDOM.findDOMNode(t.refs.scrollable)},i.buildScrollableStyle=function(){return{height:t.computedProps.containerHeight,overflowX:"hidden",overflowY:"auto",WebkitOverflowScrolling:"touch"}}),i},recomputeInternalStateFromProps:function(e){checkProps(e);var t=this.generateComputedProps(e),i=this.generateComputedUtilityFunctions(e),o={};return o.numberOfChildren=t.cursor.count(),o.infiniteComputer=infiniteHelpers.createInfiniteComputer(t.elementHeight,t.cursor,t.displayBottomUpwards),void 0!==t.isInfiniteLoading&&(o.isInfiniteLoading=t.isInfiniteLoading),o.preloadBatchSize=t.preloadBatchSize,o.preloadAdditionalHeight=t.preloadAdditionalHeight,o=Object.assign(o,infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(o,i.getScrollTop())),{computedProps:t,utils:i,newState:o}},componentWillReceiveProps:function(e){var t=this.recomputeInternalStateFromProps(e);this.computedProps=t.computedProps,this.utils=t.utils,this.setState(t.newState)},componentWillUpdate:function(){this.props.displayBottomUpwards&&(this.preservedScrollState=this.utils.getScrollTop()-this.loadingSpinnerHeight)},componentDidUpdate:function(e,t){if(this.props.displayBottomUpwards){this.loadingSpinnerHeight=this.utils.getLoadingSpinnerHeight();var i=this.getLowestPossibleScrollTop();this.shouldAttachToBottom&&this.utils.getScrollTop()<i?this.utils.setScrollTop(i):e.isInfiniteLoading&&!this.props.isInfiniteLoading&&this.utils.setScrollTop(this.state.infiniteComputer.getTotalScrollableHeight()-t.infiniteComputer.getTotalScrollableHeight()+this.preservedScrollState)}var o=this.props.cursor.count()!==e.cursor.count();if(o){var r=infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(this.state,this.utils.getScrollTop());this.setState(r)}var n=o&&!this.hasAllVisibleItems()&&!this.state.isInfiniteLoading;n&&this.onInfiniteLoad()},componentDidMount:function(){if(this.utils.subscribeToScrollListener(),this.hasAllVisibleItems()||this.onInfiniteLoad(),this.props.displayBottomUpwards){var e=this.getLowestPossibleScrollTop();this.shouldAttachToBottom&&this.utils.getScrollTop()<e&&this.utils.setScrollTop(e)}this.infiniteHandleScroll=_throttle(this.infiniteHandleScroll,10)},componentWillUnmount:function(){this.utils.unsubscribeFromScrollListener()},infiniteHandleScroll:function(e){this.utils.scrollShouldBeIgnored(e)||(this.computedProps.handleScroll(ReactDOM.findDOMNode(this.refs.scrollable)),this.handleScroll(this.utils.getScrollTop()))},manageScrollTimeouts:function(){this.state.scrollTimeout&&clearTimeout(this.state.scrollTimeout);var e=this,t=setTimeout(function(){e.setState({isScrolling:!1,scrollTimeout:void 0})},this.computedProps.timeScrollStateLastsForAfterUserScrolls);this.setState({isScrolling:!0,scrollTimeout:t})},getLowestPossibleScrollTop:function(){return this.state.infiniteComputer.getTotalScrollableHeight()-this.computedProps.containerHeight},hasAllVisibleItems:function(){return!(_isFinite(this.computedProps.infiniteLoadBeginEdgeOffset)&&this.state.infiniteComputer.getTotalScrollableHeight()<this.computedProps.containerHeight)},passedEdgeForInfiniteScroll:function(e){return this.computedProps.displayBottomUpwards?!this.shouldAttachToBottom&&e<this.computedProps.infiniteLoadBeginEdgeOffset:e>this.state.infiniteComputer.getTotalScrollableHeight()-this.computedProps.containerHeight-this.computedProps.infiniteLoadBeginEdgeOffset},onInfiniteLoad:function(){this.setState({isInfiniteLoading:!0}),this.computedProps.onInfiniteLoad()},handleScroll:function(e){this.shouldAttachToBottom=this.computedProps.displayBottomUpwards&&e>=this.getLowestPossibleScrollTop(),this.manageScrollTimeouts();var t=infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(this.state,e);this.passedEdgeForInfiniteScroll(e)&&!this.state.isInfiniteLoading?(this.setState(Object.assign({},t)),this.onInfiniteLoad()):this.setState(t)},buildHeightStyle:function(e){return{width:"100%",height:Math.ceil(e)}},render:function(){var e,t=this;e=this.computedProps.cursor.count()>1?this.computedProps.cursor.slice(this.state.displayIndexStart,this.state.displayIndexEnd+1):this.computedProps.cursor;var i=e.map(function(e,i){return t.props.childRender(e,i)}),o={};this.state.isScrolling&&(o.pointerEvents="none");var r=this.state.infiniteComputer.getTopSpacerHeight(this.state.displayIndexStart),n=this.state.infiniteComputer.getBottomSpacerHeight(this.state.displayIndexEnd);if(this.computedProps.displayBottomUpwards){var s=this.computedProps.containerHeight-this.state.infiniteComputer.getTotalScrollableHeight();s>0&&(r=s-this.loadingSpinnerHeight)}var l=void 0===this.computedProps.infiniteLoadBeginEdgeOffset?null:React.createElement("div",{ref:"loadingSpinner"},this.state.isInfiniteLoading?this.computedProps.loadingSpinnerDelegate:null),a=this.props.renderLoadMore?this.props.renderLoadMore():null;return React.createElement("div",{className:this.computedProps.className,ref:"scrollable",style:this.utils.buildScrollableStyle(),onScroll:this.utils.nodeScrollListener},React.createElement("div",{ref:"smoothScrollingWrapper",style:o},React.createElement("div",{ref:"topSpacer",style:this.buildHeightStyle(r)}),this.computedProps.displayBottomUpwards&&l,i,a,!this.computedProps.displayBottomUpwards&&l,React.createElement("div",{ref:"bottomSpacer",style:this.buildHeightStyle(n)})))}});module.exports=Infinite,global.Infinite=Infinite;
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"./utils/checkProps":9,"./utils/establish-polyfills":10,"./utils/infiniteHelpers":11,"./utils/scaleEnum":12,"./utils/types":13,"lodash.isfinite":3,"react":undefined,"react-dom":undefined}],2:[function(require,module,exports){
+},{"./utils/checkProps":11,"./utils/establish-polyfills":12,"./utils/infiniteHelpers":13,"./utils/scaleEnum":14,"./utils/types":15,"lodash.isfinite":3,"lodash.throttle":4,"react":undefined,"react-dom":undefined}],2:[function(require,module,exports){
 /**
  * lodash 3.0.4 (Custom Build) <https://lodash.com/>
  * Build: `lodash modern modularize exports="npm" -o ./`
@@ -235,6 +235,430 @@ module.exports = isFinite;
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
 },{}],4:[function(require,module,exports){
+/**
+ * lodash 4.0.1 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modularize exports="npm" -o ./`
+ * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+var debounce = require('lodash.debounce');
+
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/**
+ * Creates a throttled function that only invokes `func` at most once per
+ * every `wait` milliseconds. The throttled function comes with a `cancel`
+ * method to cancel delayed `func` invocations and a `flush` method to
+ * immediately invoke them. Provide an options object to indicate whether
+ * `func` should be invoked on the leading and/or trailing edge of the `wait`
+ * timeout. The `func` is invoked with the last arguments provided to the
+ * throttled function. Subsequent calls to the throttled function return the
+ * result of the last `func` invocation.
+ *
+ * **Note:** If `leading` and `trailing` options are `true`, `func` is invoked
+ * on the trailing edge of the timeout only if the throttled function is
+ * invoked more than once during the `wait` timeout.
+ *
+ * See [David Corbacho's article](http://drupalmotion.com/article/debounce-and-throttle-visual-explanation)
+ * for details over the differences between `_.throttle` and `_.debounce`.
+ *
+ * @static
+ * @memberOf _
+ * @category Function
+ * @param {Function} func The function to throttle.
+ * @param {number} [wait=0] The number of milliseconds to throttle invocations to.
+ * @param {Object} [options] The options object.
+ * @param {boolean} [options.leading=true] Specify invoking on the leading
+ *  edge of the timeout.
+ * @param {boolean} [options.trailing=true] Specify invoking on the trailing
+ *  edge of the timeout.
+ * @returns {Function} Returns the new throttled function.
+ * @example
+ *
+ * // Avoid excessively updating the position while scrolling.
+ * jQuery(window).on('scroll', _.throttle(updatePosition, 100));
+ *
+ * // Invoke `renewToken` when the click event is fired, but not more than once every 5 minutes.
+ * var throttled = _.throttle(renewToken, 300000, { 'trailing': false });
+ * jQuery(element).on('click', throttled);
+ *
+ * // Cancel the trailing throttled invocation.
+ * jQuery(window).on('popstate', throttled.cancel);
+ */
+function throttle(func, wait, options) {
+  var leading = true,
+      trailing = true;
+
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  if (isObject(options)) {
+    leading = 'leading' in options ? !!options.leading : leading;
+    trailing = 'trailing' in options ? !!options.trailing : trailing;
+  }
+  return debounce(func, wait, {
+    'leading': leading,
+    'maxWait': wait,
+    'trailing': trailing
+  });
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+module.exports = throttle;
+
+},{"lodash.debounce":5}],5:[function(require,module,exports){
+/**
+ * lodash 4.0.3 (Custom Build) <https://lodash.com/>
+ * Build: `lodash modularize exports="npm" -o ./`
+ * Copyright 2012-2016 The Dojo Foundation <http://dojofoundation.org/>
+ * Based on Underscore.js 1.8.3 <http://underscorejs.org/LICENSE>
+ * Copyright 2009-2016 Jeremy Ashkenas, DocumentCloud and Investigative Reporters & Editors
+ * Available under MIT license <https://lodash.com/license>
+ */
+
+/** Used as the `TypeError` message for "Functions" methods. */
+var FUNC_ERROR_TEXT = 'Expected a function';
+
+/** Used as references for various `Number` constants. */
+var NAN = 0 / 0;
+
+/** `Object#toString` result references. */
+var funcTag = '[object Function]',
+    genTag = '[object GeneratorFunction]';
+
+/** Used to match leading and trailing whitespace. */
+var reTrim = /^\s+|\s+$/g;
+
+/** Used to detect bad signed hexadecimal string values. */
+var reIsBadHex = /^[-+]0x[0-9a-f]+$/i;
+
+/** Used to detect binary string values. */
+var reIsBinary = /^0b[01]+$/i;
+
+/** Used to detect octal string values. */
+var reIsOctal = /^0o[0-7]+$/i;
+
+/** Built-in method references without a dependency on `root`. */
+var freeParseInt = parseInt;
+
+/** Used for built-in method references. */
+var objectProto = Object.prototype;
+
+/**
+ * Used to resolve the [`toStringTag`](http://ecma-international.org/ecma-262/6.0/#sec-object.prototype.tostring)
+ * of values.
+ */
+var objectToString = objectProto.toString;
+
+/* Built-in method references for those with the same name as other `lodash` methods. */
+var nativeMax = Math.max;
+
+/**
+ * Gets the timestamp of the number of milliseconds that have elapsed since
+ * the Unix epoch (1 January 1970 00:00:00 UTC).
+ *
+ * @static
+ * @memberOf _
+ * @type {Function}
+ * @category Date
+ * @returns {number} Returns the timestamp.
+ * @example
+ *
+ * _.defer(function(stamp) {
+ *   console.log(_.now() - stamp);
+ * }, _.now());
+ * // => logs the number of milliseconds it took for the deferred function to be invoked
+ */
+var now = Date.now;
+
+/**
+ * Creates a debounced function that delays invoking `func` until after `wait`
+ * milliseconds have elapsed since the last time the debounced function was
+ * invoked. The debounced function comes with a `cancel` method to cancel
+ * delayed `func` invocations and a `flush` method to immediately invoke them.
+ * Provide an options object to indicate whether `func` should be invoked on
+ * the leading and/or trailing edge of the `wait` timeout. The `func` is invoked
+ * with the last arguments provided to the debounced function. Subsequent calls
+ * to the debounced function return the result of the last `func` invocation.
+ *
+ * **Note:** If `leading` and `trailing` options are `true`, `func` is invoked
+ * on the trailing edge of the timeout only if the debounced function is
+ * invoked more than once during the `wait` timeout.
+ *
+ * See [David Corbacho's article](http://drupalmotion.com/article/debounce-and-throttle-visual-explanation)
+ * for details over the differences between `_.debounce` and `_.throttle`.
+ *
+ * @static
+ * @memberOf _
+ * @category Function
+ * @param {Function} func The function to debounce.
+ * @param {number} [wait=0] The number of milliseconds to delay.
+ * @param {Object} [options] The options object.
+ * @param {boolean} [options.leading=false] Specify invoking on the leading
+ *  edge of the timeout.
+ * @param {number} [options.maxWait] The maximum time `func` is allowed to be
+ *  delayed before it's invoked.
+ * @param {boolean} [options.trailing=true] Specify invoking on the trailing
+ *  edge of the timeout.
+ * @returns {Function} Returns the new debounced function.
+ * @example
+ *
+ * // Avoid costly calculations while the window size is in flux.
+ * jQuery(window).on('resize', _.debounce(calculateLayout, 150));
+ *
+ * // Invoke `sendMail` when clicked, debouncing subsequent calls.
+ * jQuery(element).on('click', _.debounce(sendMail, 300, {
+ *   'leading': true,
+ *   'trailing': false
+ * }));
+ *
+ * // Ensure `batchLog` is invoked once after 1 second of debounced calls.
+ * var debounced = _.debounce(batchLog, 250, { 'maxWait': 1000 });
+ * var source = new EventSource('/stream');
+ * jQuery(source).on('message', debounced);
+ *
+ * // Cancel the trailing debounced invocation.
+ * jQuery(window).on('popstate', debounced.cancel);
+ */
+function debounce(func, wait, options) {
+  var args,
+      maxTimeoutId,
+      result,
+      stamp,
+      thisArg,
+      timeoutId,
+      trailingCall,
+      lastCalled = 0,
+      leading = false,
+      maxWait = false,
+      trailing = true;
+
+  if (typeof func != 'function') {
+    throw new TypeError(FUNC_ERROR_TEXT);
+  }
+  wait = toNumber(wait) || 0;
+  if (isObject(options)) {
+    leading = !!options.leading;
+    maxWait = 'maxWait' in options && nativeMax(toNumber(options.maxWait) || 0, wait);
+    trailing = 'trailing' in options ? !!options.trailing : trailing;
+  }
+
+  function cancel() {
+    if (timeoutId) {
+      clearTimeout(timeoutId);
+    }
+    if (maxTimeoutId) {
+      clearTimeout(maxTimeoutId);
+    }
+    lastCalled = 0;
+    args = maxTimeoutId = thisArg = timeoutId = trailingCall = undefined;
+  }
+
+  function complete(isCalled, id) {
+    if (id) {
+      clearTimeout(id);
+    }
+    maxTimeoutId = timeoutId = trailingCall = undefined;
+    if (isCalled) {
+      lastCalled = now();
+      result = func.apply(thisArg, args);
+      if (!timeoutId && !maxTimeoutId) {
+        args = thisArg = undefined;
+      }
+    }
+  }
+
+  function delayed() {
+    var remaining = wait - (now() - stamp);
+    if (remaining <= 0 || remaining > wait) {
+      complete(trailingCall, maxTimeoutId);
+    } else {
+      timeoutId = setTimeout(delayed, remaining);
+    }
+  }
+
+  function flush() {
+    if ((timeoutId && trailingCall) || (maxTimeoutId && trailing)) {
+      result = func.apply(thisArg, args);
+    }
+    cancel();
+    return result;
+  }
+
+  function maxDelayed() {
+    complete(trailing, timeoutId);
+  }
+
+  function debounced() {
+    args = arguments;
+    stamp = now();
+    thisArg = this;
+    trailingCall = trailing && (timeoutId || !leading);
+
+    if (maxWait === false) {
+      var leadingCall = leading && !timeoutId;
+    } else {
+      if (!lastCalled && !maxTimeoutId && !leading) {
+        lastCalled = stamp;
+      }
+      var remaining = maxWait - (stamp - lastCalled);
+
+      var isCalled = (remaining <= 0 || remaining > maxWait) &&
+        (leading || maxTimeoutId);
+
+      if (isCalled) {
+        if (maxTimeoutId) {
+          maxTimeoutId = clearTimeout(maxTimeoutId);
+        }
+        lastCalled = stamp;
+        result = func.apply(thisArg, args);
+      }
+      else if (!maxTimeoutId) {
+        maxTimeoutId = setTimeout(maxDelayed, remaining);
+      }
+    }
+    if (isCalled && timeoutId) {
+      timeoutId = clearTimeout(timeoutId);
+    }
+    else if (!timeoutId && wait !== maxWait) {
+      timeoutId = setTimeout(delayed, wait);
+    }
+    if (leadingCall) {
+      isCalled = true;
+      result = func.apply(thisArg, args);
+    }
+    if (isCalled && !timeoutId && !maxTimeoutId) {
+      args = thisArg = undefined;
+    }
+    return result;
+  }
+  debounced.cancel = cancel;
+  debounced.flush = flush;
+  return debounced;
+}
+
+/**
+ * Checks if `value` is classified as a `Function` object.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is correctly classified, else `false`.
+ * @example
+ *
+ * _.isFunction(_);
+ * // => true
+ *
+ * _.isFunction(/abc/);
+ * // => false
+ */
+function isFunction(value) {
+  // The use of `Object#toString` avoids issues with the `typeof` operator
+  // in Safari 8 which returns 'object' for typed array constructors, and
+  // PhantomJS 1.9 which returns 'function' for `NodeList` instances.
+  var tag = isObject(value) ? objectToString.call(value) : '';
+  return tag == funcTag || tag == genTag;
+}
+
+/**
+ * Checks if `value` is the [language type](https://es5.github.io/#x8) of `Object`.
+ * (e.g. arrays, functions, objects, regexes, `new Number(0)`, and `new String('')`)
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to check.
+ * @returns {boolean} Returns `true` if `value` is an object, else `false`.
+ * @example
+ *
+ * _.isObject({});
+ * // => true
+ *
+ * _.isObject([1, 2, 3]);
+ * // => true
+ *
+ * _.isObject(_.noop);
+ * // => true
+ *
+ * _.isObject(null);
+ * // => false
+ */
+function isObject(value) {
+  var type = typeof value;
+  return !!value && (type == 'object' || type == 'function');
+}
+
+/**
+ * Converts `value` to a number.
+ *
+ * @static
+ * @memberOf _
+ * @category Lang
+ * @param {*} value The value to process.
+ * @returns {number} Returns the number.
+ * @example
+ *
+ * _.toNumber(3);
+ * // => 3
+ *
+ * _.toNumber(Number.MIN_VALUE);
+ * // => 5e-324
+ *
+ * _.toNumber(Infinity);
+ * // => Infinity
+ *
+ * _.toNumber('3');
+ * // => 3
+ */
+function toNumber(value) {
+  if (isObject(value)) {
+    var other = isFunction(value.valueOf) ? value.valueOf() : value;
+    value = isObject(other) ? (other + '') : other;
+  }
+  if (typeof value != 'string') {
+    return value === 0 ? value : +value;
+  }
+  value = value.replace(reTrim, '');
+  var isBinary = reIsBinary.test(value);
+  return (isBinary || reIsOctal.test(value))
+    ? freeParseInt(value.slice(2), isBinary ? 2 : 8)
+    : (reIsBadHex.test(value) ? NAN : +value);
+}
+
+module.exports = debounce;
+
+},{}],6:[function(require,module,exports){
 /* eslint-disable no-unused-vars */
 'use strict';
 var hasOwnProperty = Object.prototype.hasOwnProperty;
@@ -275,43 +699,43 @@ module.exports = Object.assign || function (target, source) {
 	return to;
 };
 
-},{}],5:[function(require,module,exports){
+},{}],7:[function(require,module,exports){
 "use strict";function _classCallCheck(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}function _inherits(e,t){if("function"!=typeof t&&null!==t)throw new TypeError("Super expression must either be null or a function, not "+typeof t);e.prototype=Object.create(t&&t.prototype,{constructor:{value:e,enumerable:!1,writable:!0,configurable:!0}}),t&&(Object.setPrototypeOf?Object.setPrototypeOf(e,t):e.__proto__=t)}var _createClass=function(){function e(e,t){for(var r=0;r<t.length;r++){var n=t[r];n.enumerable=n.enumerable||!1,n.configurable=!0,"value"in n&&(n.writable=!0),Object.defineProperty(e,n.key,n)}}return function(t,r,n){return r&&e(t.prototype,r),n&&e(t,n),t}}(),_get=function(e,t,r){for(var n=!0;n;){var i=e,a=t,o=r;n=!1,null===i&&(i=Function.prototype);var u=Object.getOwnPropertyDescriptor(i,a);if(void 0!==u){if("value"in u)return u.value;var l=u.get;if(void 0===l)return;return l.call(o)}var c=Object.getPrototypeOf(i);if(null===c)return;e=c,t=a,r=o,n=!0,u=c=void 0}},InfiniteComputer=require("./infiniteComputer.js"),bs=require("../utils/binaryIndexSearch.js"),ArrayInfiniteComputer=function(e){function t(e,r){_classCallCheck(this,t),_get(Object.getPrototypeOf(t.prototype),"constructor",this).call(this,e,r),this.prefixHeightData=this.heightData.reduce(function(e,t){return 0===e.length?[t]:(e.push(e[e.length-1]+t),e)},[])}return _inherits(t,e),_createClass(t,[{key:"maybeIndexToIndex",value:function(e){return"undefined"==typeof e||null===e?this.prefixHeightData.length-1:e}},{key:"getTotalScrollableHeight",value:function(){var e=this.prefixHeightData.length;return 0===e?0:this.prefixHeightData[e-1]}},{key:"getDisplayIndexStart",value:function(e){var t=bs.binaryIndexSearch(this.prefixHeightData,e,bs.opts.CLOSEST_HIGHER);return this.maybeIndexToIndex(t)}},{key:"getDisplayIndexEnd",value:function(e){var t=bs.binaryIndexSearch(this.prefixHeightData,e,bs.opts.CLOSEST_HIGHER);return this.maybeIndexToIndex(t)}},{key:"getTopSpacerHeight",value:function(e){var t=e-1;return 0>t?0:this.prefixHeightData[t]}},{key:"getBottomSpacerHeight",value:function(e){return-1===e?0:this.getTotalScrollableHeight()-this.prefixHeightData[e]}}]),t}(InfiniteComputer);module.exports=ArrayInfiniteComputer;
 
 
-},{"../utils/binaryIndexSearch.js":8,"./infiniteComputer.js":7}],6:[function(require,module,exports){
+},{"../utils/binaryIndexSearch.js":10,"./infiniteComputer.js":9}],8:[function(require,module,exports){
 "use strict";function _classCallCheck(t,e){if(!(t instanceof e))throw new TypeError("Cannot call a class as a function")}function _inherits(t,e){if("function"!=typeof e&&null!==e)throw new TypeError("Super expression must either be null or a function, not "+typeof e);t.prototype=Object.create(e&&e.prototype,{constructor:{value:t,enumerable:!1,writable:!0,configurable:!0}}),e&&(Object.setPrototypeOf?Object.setPrototypeOf(t,e):t.__proto__=e)}var _createClass=function(){function t(t,e){for(var r=0;r<e.length;r++){var n=e[r];n.enumerable=n.enumerable||!1,n.configurable=!0,"value"in n&&(n.writable=!0),Object.defineProperty(t,n.key,n)}}return function(e,r,n){return r&&t(e.prototype,r),n&&t(e,n),e}}(),_get=function(t,e,r){for(var n=!0;n;){var o=t,i=e,a=r;n=!1,null===o&&(o=Function.prototype);var u=Object.getOwnPropertyDescriptor(o,i);if(void 0!==u){if("value"in u)return u.value;var l=u.get;if(void 0===l)return;return l.call(a)}var c=Object.getPrototypeOf(o);if(null===c)return;t=c,e=i,r=a,n=!0,u=c=void 0}},InfiniteComputer=require("./infiniteComputer.js"),ConstantInfiniteComputer=function(t){function e(){_classCallCheck(this,e),_get(Object.getPrototypeOf(e.prototype),"constructor",this).apply(this,arguments)}return _inherits(e,t),_createClass(e,[{key:"getTotalScrollableHeight",value:function(){return this.heightData*this.numberOfChildren}},{key:"getDisplayIndexStart",value:function(t){return Math.floor(t/this.heightData)}},{key:"getDisplayIndexEnd",value:function(t){var e=Math.ceil(t/this.heightData);return e>0?e-1:e}},{key:"getTopSpacerHeight",value:function(t){return t*this.heightData}},{key:"getBottomSpacerHeight",value:function(t){var e=t+1;return Math.max(0,(this.numberOfChildren-e)*this.heightData)}}]),e}(InfiniteComputer);module.exports=ConstantInfiniteComputer;
 
 
-},{"./infiniteComputer.js":7}],7:[function(require,module,exports){
+},{"./infiniteComputer.js":9}],9:[function(require,module,exports){
 "use strict";function _classCallCheck(e,t){if(!(e instanceof t))throw new TypeError("Cannot call a class as a function")}var _createClass=function(){function e(e,t){for(var n=0;n<t.length;n++){var a=t[n];a.enumerable=a.enumerable||!1,a.configurable=!0,"value"in a&&(a.writable=!0),Object.defineProperty(e,a.key,a)}}return function(t,n,a){return n&&e(t.prototype,n),a&&e(t,a),t}}(),InfiniteComputer=function(){function e(t,n){_classCallCheck(this,e),this.heightData=t,this.numberOfChildren=n}return _createClass(e,[{key:"getTotalScrollableHeight",value:function(){}},{key:"getDisplayIndexStart",value:function(e){}},{key:"getDisplayIndexEnd",value:function(e){}},{key:"getTopSpacerHeight",value:function(e){}},{key:"getBottomSpacerHeight",value:function(e){}}]),e}();module.exports=InfiniteComputer;
 
 
-},{}],8:[function(require,module,exports){
+},{}],10:[function(require,module,exports){
 "use strict";var opts={CLOSEST_LOWER:1,CLOSEST_HIGHER:2},binaryIndexSearch=function(r,t,e){for(var n,o,S,a=r.length-1,s=0;a>=s;){if(o=s+Math.floor((a-s)/2),S=r[o],S===t)return o;t>S?s=o+1:S>t&&(a=o-1)}return e===opts.CLOSEST_LOWER&&s>0?n=s-1:e===opts.CLOSEST_HIGHER&&a<r.length-1&&(n=a+1),n};module.exports={binaryIndexSearch:binaryIndexSearch,opts:opts};
 
 
-},{}],9:[function(require,module,exports){
+},{}],11:[function(require,module,exports){
 (function (global){
 "use strict";var React=global.React||require("react"),_isFinite=require("lodash.isfinite");module.exports=function(e){var r="Invariant Violation: ";if(!e.containerHeight&&!e.useWindowAsScrollContainer)throw new Error(r+"Either containerHeight or useWindowAsScrollContainer must be provided.");if(!_isFinite(e.elementHeight)&&!Array.isArray(e.elementHeight))throw new Error(r+"You must provide either a number or an array of numbers as the elementHeight.");if(Array.isArray(e.elementHeight)&&React.Children.count(e.children)!==e.elementHeight.length)throw new Error(r+"There must be as many values provided in the elementHeight prop as there are children.")};
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"lodash.isfinite":3,"react":undefined}],10:[function(require,module,exports){
+},{"lodash.isfinite":3,"react":undefined}],12:[function(require,module,exports){
 "use strict";Object.assign||(Object.assign=require("object-assign")),Array.isArray||(Array.isArray=require("lodash.isarray"));
 
 
-},{"lodash.isarray":2,"object-assign":4}],11:[function(require,module,exports){
+},{"lodash.isarray":2,"object-assign":6}],13:[function(require,module,exports){
 (function (global){
 "use strict";function createInfiniteComputer(t,e){var r,n=e.count();return r=Array.isArray(t)?new ArrayInfiniteComputer(t,n):new ConstantInfiniteComputer(t,n)}function recomputeApertureStateFromOptionsAndScrollTop(t,e){var r=t.preloadBatchSize,n=t.preloadAdditionalHeight,o=t.infiniteComputer;return function(){var t=0===r?0:Math.floor(e/r),i=r*t,a=i+r,p=Math.max(0,i-n),u=Math.min(o.getTotalScrollableHeight(),a+n);return{displayIndexStart:o.getDisplayIndexStart(p),displayIndexEnd:o.getDisplayIndexEnd(u)}}()}var ConstantInfiniteComputer=require("../computers/constantInfiniteComputer.js"),ArrayInfiniteComputer=require("../computers/arrayInfiniteComputer.js"),React=global.React||require("react");module.exports={createInfiniteComputer:createInfiniteComputer,recomputeApertureStateFromOptionsAndScrollTop:recomputeApertureStateFromOptionsAndScrollTop};
 
 
 }).call(this,typeof global !== "undefined" ? global : typeof self !== "undefined" ? self : typeof window !== "undefined" ? window : {})
-},{"../computers/arrayInfiniteComputer.js":5,"../computers/constantInfiniteComputer.js":6,"react":undefined}],12:[function(require,module,exports){
+},{"../computers/arrayInfiniteComputer.js":7,"../computers/constantInfiniteComputer.js":8,"react":undefined}],14:[function(require,module,exports){
 "use strict";module.exports={CONTAINER_HEIGHT_SCALE_FACTOR:"containerHeightScaleFactor"};
 
 
-},{}],13:[function(require,module,exports){
+},{}],15:[function(require,module,exports){
 (function (global){
 "use strict";var React=global.React||require("react");module.exports={preloadType:React.PropTypes.oneOfType([React.PropTypes.number,React.PropTypes.shape({type:React.PropTypes.oneOf(["containerHeightScaleFactor"]).isRequired,amount:React.PropTypes.number.isRequired})])};
 

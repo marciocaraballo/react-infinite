@@ -7,6 +7,7 @@ require('./utils/establish-polyfills');
 var scaleEnum = require('./utils/scaleEnum');
 var infiniteHelpers = require('./utils/infiniteHelpers');
 var _isFinite = require('lodash.isfinite');
+var _throttle = require('lodash.throttle');
 
 var preloadType = require('./utils/types').preloadType;
 var checkProps = checkProps = require('./utils/checkProps');
@@ -57,7 +58,7 @@ var Infinite = React.createClass({
     // 2) Use unique keys for each child
     cursor: React.PropTypes.object,
 
-    childRender: React.PropTypes.func
+    childRender: React.PropTypes.func.isRequired
   },
   statics: {
     containerHeightScaleFactor(factor) {
@@ -287,9 +288,10 @@ var Infinite = React.createClass({
   },
 
   componentDidUpdate(prevProps: ReactInfiniteProps, prevState: ReactInfiniteState) {
-    this.loadingSpinnerHeight = this.utils.getLoadingSpinnerHeight();
-
     if (this.props.displayBottomUpwards) {
+      // this line was in the top of this function, moved to here for performance improvments
+      this.loadingSpinnerHeight = this.utils.getLoadingSpinnerHeight();
+
       var lowestScrollTop = this.getLowestPossibleScrollTop();
       if (this.shouldAttachToBottom && this.utils.getScrollTop() < lowestScrollTop) {
         this.utils.setScrollTop(lowestScrollTop);
@@ -329,6 +331,8 @@ var Infinite = React.createClass({
         this.utils.setScrollTop(lowestScrollTop);
       }
     }
+    // fix some performance issues
+    this.infiniteHandleScroll = _throttle(this.infiniteHandleScroll, 10);
   },
 
   componentWillUnmount() {
@@ -452,6 +456,8 @@ var Infinite = React.createClass({
         {this.state.isInfiniteLoading ? this.computedProps.loadingSpinnerDelegate : null}
       </div>;
 
+    var loadMore = this.props.renderLoadMore ? this.props.renderLoadMore() : null;
+
     // topSpacer and bottomSpacer take up the amount of space that the
     // rendered elements would have taken up otherwise
     return <div className={this.computedProps.className}
@@ -461,10 +467,10 @@ var Infinite = React.createClass({
       <div ref="smoothScrollingWrapper" style={infiniteScrollStyles}>
         <div ref="topSpacer"
              style={this.buildHeightStyle(topSpacerHeight)}/>
-        {this.computedProps.displayBottomUpwards && loadingSpinner}
+          {this.computedProps.displayBottomUpwards && loadingSpinner}
           {displayablesRender}
-          {this.props.renderLoadMore()}
-        {!this.computedProps.displayBottomUpwards && loadingSpinner}
+          {loadMore}
+          {!this.computedProps.displayBottomUpwards && loadingSpinner}
         <div ref="bottomSpacer"
              style={this.buildHeightStyle(bottomSpacerHeight)}/>
       </div>

@@ -89,11 +89,15 @@ let InfiniteListStore = React.createClass({
         });
 
         // this has to be refactor, i have to simulate a ajax call in a best way
-        setTimeout(function() {
-            this.setState({
-                isInfiniteLoading: false
-            });
-        }.bind(this), 2500);
+        // setTimeout(function() {
+        //     this.setState({
+        //         isInfiniteLoading: false
+        //     });
+        // }.bind(this), 2500);
+        this.setState({
+            isInfiniteLoading: false
+        });
+
     },
 
     render: function() {

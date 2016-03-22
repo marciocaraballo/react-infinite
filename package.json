@@ -85,6 +85,7 @@
     "immutable": "3.7.6",
     "lodash.isarray": "3.0.4",
     "lodash.isfinite": "3.2.0",
+    "lodash.throttle": "4.0.1",
     "object-assign": "4.0.1"
   },
   "peerDependencies": {

@@ -7,6 +7,7 @@ require('./utils/establish-polyfills');
 var scaleEnum = require('./utils/scaleEnum');
 var infiniteHelpers = require('./utils/infiniteHelpers');
 var _isFinite = require('lodash.isfinite');
+var _throttle = require('lodash.throttle');
 
 var preloadType = require('./utils/types').preloadType;
 var checkProps = checkProps = require('./utils/checkProps');
@@ -287,9 +288,10 @@ var Infinite = React.createClass({
   },
 
   componentDidUpdate(prevProps: ReactInfiniteProps, prevState: ReactInfiniteState) {
-    this.loadingSpinnerHeight = this.utils.getLoadingSpinnerHeight();
-
     if (this.props.displayBottomUpwards) {
+      // this line was in the top of this function, moved to here for performance improvments
+      this.loadingSpinnerHeight = this.utils.getLoadingSpinnerHeight();
+
       var lowestScrollTop = this.getLowestPossibleScrollTop();
       if (this.shouldAttachToBottom && this.utils.getScrollTop() < lowestScrollTop) {
         this.utils.setScrollTop(lowestScrollTop);
@@ -329,6 +331,8 @@ var Infinite = React.createClass({
         this.utils.setScrollTop(lowestScrollTop);
       }
     }
+    // fix some performance issues
+    this.infiniteHandleScroll = _throttle(this.infiniteHandleScroll, 10);
   },
 
   componentWillUnmount() {

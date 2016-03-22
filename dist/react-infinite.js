@@ -285,7 +285,7 @@ var Infinite = React.createClass({
 
   componentDidUpdate: function componentDidUpdate(prevProps, prevState) {
     if (this.props.displayBottomUpwards) {
-      // this line was in the bottom of this function, moved to here for performance improvments
+      // this line was in the top of this function, moved to here for performance improvments
       this.loadingSpinnerHeight = this.utils.getLoadingSpinnerHeight();
 
       var lowestScrollTop = this.getLowestPossibleScrollTop();

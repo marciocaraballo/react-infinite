@@ -23,7 +23,7 @@ let ListItem = React.createClass({
                 height: this.props.height,
                 lineHeight: this.props.lineHeight
             }
-        } key={this.props.key}>
+        } key={this.props.index}>
             List Item {this.props.value}
         </div>;
     }

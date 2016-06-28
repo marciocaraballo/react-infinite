@@ -53,10 +53,11 @@ var Infinite = React.createClass({
 
     className: React.PropTypes.string,
 
-    //Custom: depend on data structures, so we don't need to
+    // Custom implementation
+    // For redux, we take a single state object
     // 1) Create all children before rendering
     // 2) Use unique keys for each child
-    cursor: React.PropTypes.object,
+    list: React.PropTypes.object,
 
     childRender: React.PropTypes.func.isRequired
   },
@@ -98,7 +99,7 @@ var Infinite = React.createClass({
       className: '',
 
       //Custom impl
-      cursor: null
+      state: []
     };
   },
 
@@ -245,12 +246,12 @@ var Infinite = React.createClass({
 
     var newState = {};
 
-    //Custom: take future child count from cursor, not children
-    newState.numberOfChildren = computedProps.cursor.count();
+    //Custom: take future child count from list, not children
+    newState.numberOfChildren = computedProps.list.length;
 
     newState.infiniteComputer = infiniteHelpers.createInfiniteComputer(
       computedProps.elementHeight,
-      computedProps.cursor,
+      computedProps.list,
       computedProps.displayBottomUpwards
     );
 
@@ -302,8 +303,8 @@ var Infinite = React.createClass({
       }
     }
 
-    //Custom using cursors instead of children
-    const hasLoadedMoreChildren = this.props.cursor.count() !== prevProps.cursor.count();
+    //Custom using list elements instead of children
+    const hasLoadedMoreChildren = this.props.list.length !== prevProps.list.length;
     if (hasLoadedMoreChildren) {
       var newApertureState = infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(
         this.state,
@@ -422,11 +423,11 @@ var Infinite = React.createClass({
   render(): ReactElement<any, any, any> {
     var displayables;
 
-    if (this.computedProps.cursor.count() > 1) {
-      displayables = this.computedProps.cursor.slice(this.state.displayIndexStart,
+    if (this.computedProps.list.length > 1) {
+      displayables = this.computedProps.list.slice(this.state.displayIndexStart,
                                                        this.state.displayIndexEnd + 1);
     } else {
-      displayables = this.computedProps.cursor;
+      displayables = this.computedProps.list;
     }
 
     var displayablesRender = displayables.map((displayable, i) => {

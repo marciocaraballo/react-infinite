@@ -57,7 +57,7 @@ var Infinite = React.createClass({
     // For redux, we take a single state object
     // 1) Create all children before rendering
     // 2) Use unique keys for each child
-    list: React.PropTypes.object,
+    list: React.PropTypes.array,
 
     childRender: React.PropTypes.func.isRequired
   },

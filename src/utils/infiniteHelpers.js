@@ -5,9 +5,9 @@ var ArrayInfiniteComputer = require('../computers/arrayInfiniteComputer.js');
 var React = global.React || require('react');
 
 function createInfiniteComputer(data: ElementHeight,
-                                cursor: any): InfiniteComputer {
+                                list: any): InfiniteComputer {
   var computer;
-  var numberOfChildren = cursor.count();
+  var numberOfChildren = list.length;
 
   // This should be guaranteed by checkProps
   if (Array.isArray(data)) {

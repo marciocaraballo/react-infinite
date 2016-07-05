@@ -1,6 +1,6 @@
 {
   "name": "react-infinite-cursor",
-  "version": "2.0.2",
+  "version": "2.0.3",
   "description": "A browser-ready efficient scrolling container based on UITableView. Takes a cursor for rendering.",
   "main": "build/react-infinite.js",
   "repository": {

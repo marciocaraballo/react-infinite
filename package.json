@@ -1,6 +1,6 @@
 {
   "name": "react-infinite-cursor",
-  "version": "4.0.1",
+  "version": "4.0.2",
   "description": "A browser-ready efficient scrolling container based on UITableView. Takes a cursor for rendering.",
   "main": "build/react-infinite.js",
   "repository": {
@@ -84,7 +84,9 @@
     "lodash.throttle": "4.0.1",
     "lodash.isarray": "3.0.4",
     "lodash.isfinite": "3.2.0",
-    "object-assign": "4.0.1"
+    "object-assign": "4.0.1",
+    "react": "^15.0.0",
+    "react-dom": "^15.0.0"
   },
   "peerDependencies": {
     "react": "^15.0.0",

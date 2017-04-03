@@ -7,7 +7,6 @@ require('./utils/establish-polyfills');
 var scaleEnum = require('./utils/scaleEnum');
 var infiniteHelpers = require('./utils/infiniteHelpers');
 var _isFinite = require('lodash.isfinite');
-var _throttle = require('lodash.throttle');
 
 var preloadType = require('./utils/types').preloadType;
 var checkProps = checkProps = require('./utils/checkProps');
@@ -314,8 +313,6 @@ var Infinite = React.createClass({
     if (isMissingVisibleRows) {
       this.onInfiniteLoad();
     }
-
-    this.infiniteHandleScroll = _throttle(this.infiniteHandleScroll, 10);
   },
 
   componentDidMount() {

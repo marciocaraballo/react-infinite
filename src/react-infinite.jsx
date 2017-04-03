@@ -57,12 +57,9 @@ var Infinite = React.createClass({
       scrollableStyle: React.PropTypes.object
     }).isRequired,
 
-    /*
-    * Custom own version of react-infinite. The same but with a new hat.
-    */
-    list: PropTypes.array.isRequired,
-    childRender: PropTypes.func.isRequired,
-    renderLoadMore: PropTypes.func
+    list: React.PropTypes.array.isRequired,
+    childRender: React.PropTypes.func.isRequired,
+    renderLoadMore: React.PropTypes.func
   },
   statics: {
     containerHeightScaleFactor(factor) {
@@ -317,7 +314,7 @@ var Infinite = React.createClass({
     if (isMissingVisibleRows) {
       this.onInfiniteLoad();
     }
-    
+
     this.infiniteHandleScroll = _throttle(this.infiniteHandleScroll, 10);
   },
 

@@ -1,6 +1,7 @@
 /* @flow */
 
 var React = global.React || require('react');
+var ReactDOM = global.ReactDOM || require('react-dom');
 
 require('./utils/establish-polyfills');
 var scaleEnum = require('./utils/scaleEnum');
@@ -52,13 +53,16 @@ var Infinite = React.createClass({
 
     className: React.PropTypes.string,
 
-    // Custom implementation
-    // For redux, we take a single state object
-    // 1) Create all children before rendering
-    // 2) Use unique keys for each child
-    list: React.PropTypes.array,
+    styles: React.PropTypes.shape({
+      scrollableStyle: React.PropTypes.object
+    }).isRequired,
 
-    childRender: React.PropTypes.func.isRequired
+    /*
+    * Custom own version of react-infinite. The same but with a new hat.
+    */
+    list: PropTypes.array.isRequired,
+    childRender: PropTypes.func.isRequired,
+    renderLoadMore: PropTypes.func
   },
   statics: {
     containerHeightScaleFactor(factor) {
@@ -83,11 +87,13 @@ var Infinite = React.createClass({
 
   getDefaultProps(): ReactInfiniteProvidedDefaultProps {
     return {
-      handleScroll: () => {},
+      handleScroll: () => {
+      },
 
       useWindowAsScrollContainer: false,
 
-      onInfiniteLoad: () => {},
+      onInfiniteLoad: () => {
+      },
       loadingSpinnerDelegate: <div/>,
 
       displayBottomUpwards: false,
@@ -97,8 +103,8 @@ var Infinite = React.createClass({
 
       className: '',
 
-      //Custom impl
-      state: []
+      styles: {},
+      list: []
     };
   },
 
@@ -151,7 +157,7 @@ var Infinite = React.createClass({
 
     if (typeof preloadBatchSize === 'number') {
       newProps.preloadBatchSize = preloadBatchSize;
-    } else if (batchSize.type === scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR) {
+    } else if (typeof batchSize === 'object' && batchSize.type === scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR) {
       newProps.preloadBatchSize = newProps.containerHeight * batchSize.amount;
     } else {
       newProps.preloadBatchSize = 0;
@@ -166,7 +172,7 @@ var Infinite = React.createClass({
       : defaultPreloadAdditionalHeightScaling;
     if (typeof preloadAdditionalHeight === 'number') {
       newProps.preloadAdditionalHeight = preloadAdditionalHeight;
-    } else if (additionalHeight.type === scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR) {
+    } else if (typeof additionalHeight === 'object' && additionalHeight.type === scaleEnum.CONTAINER_HEIGHT_SCALE_FACTOR) {
       newProps.preloadAdditionalHeight = newProps.containerHeight * additionalHeight.amount;
     } else {
       newProps.preloadAdditionalHeight = 0;
@@ -179,8 +185,9 @@ var Infinite = React.createClass({
     var utilities = {};
     utilities.getLoadingSpinnerHeight = () => {
       var loadingSpinnerHeight = 0;
-      if (this.loadingSpinner) {
-        loadingSpinnerHeight = this.loadingSpinner.offsetHeight || 0;
+      if (this.refs && this.refs.loadingSpinner) {
+        var loadingSpinnerNode = ReactDOM.findDOMNode(this.refs.loadingSpinner);
+        loadingSpinnerHeight = loadingSpinnerNode.offsetHeight || 0;
       }
       return loadingSpinnerHeight;
     };
@@ -203,23 +210,31 @@ var Infinite = React.createClass({
       utilities.unsubscribeFromScrollListener = () => {};
       utilities.nodeScrollListener = this.infiniteHandleScroll;
       utilities.getScrollTop = () => {
-        return this.scrollable ? this.scrollable.scrollTop : 0;
+        var scrollable;
+        if (this.refs && this.refs.scrollable) {
+          scrollable = ReactDOM.findDOMNode(this.refs.scrollable);
+        }
+        return scrollable ? scrollable.scrollTop : 0;
       };
 
       utilities.setScrollTop = (top) => {
-        if (this.scrollable) {
-          this.scrollable.scrollTop = top;
+        var scrollable;
+        if (this.refs && this.refs.scrollable) {
+          scrollable = ReactDOM.findDOMNode(this.refs.scrollable);
+        }
+        if (scrollable) {
+          scrollable.scrollTop = top;
         }
       };
-      utilities.scrollShouldBeIgnored = event => event.target !== this.scrollable;
+      utilities.scrollShouldBeIgnored = event => event.target !== ReactDOM.findDOMNode(this.refs.scrollable);
 
       utilities.buildScrollableStyle = () => {
-        return {
+        return Object.assign({}, {
           height: this.computedProps.containerHeight,
           overflowX: 'hidden',
           overflowY: 'auto',
           WebkitOverflowScrolling: 'touch'
-        };
+        }, this.computedProps.styles.scrollableStyle || {});
       };
     }
     return utilities;
@@ -236,9 +251,7 @@ var Infinite = React.createClass({
 
     var newState = {};
 
-    //Custom: take future child count from list, not children
     newState.numberOfChildren = computedProps.list.length;
-
     newState.infiniteComputer = infiniteHelpers.createInfiniteComputer(
       computedProps.elementHeight,
       computedProps.list,
@@ -280,9 +293,7 @@ var Infinite = React.createClass({
 
   componentDidUpdate(prevProps: ReactInfiniteProps, prevState: ReactInfiniteState) {
     if (this.props.displayBottomUpwards) {
-      // this line was in the top of this function, moved to here for performance improvments
       this.loadingSpinnerHeight = this.utils.getLoadingSpinnerHeight();
-
       var lowestScrollTop = this.getLowestPossibleScrollTop();
       if (this.shouldAttachToBottom && this.utils.getScrollTop() < lowestScrollTop) {
         this.utils.setScrollTop(lowestScrollTop);
@@ -293,7 +304,6 @@ var Infinite = React.createClass({
       }
     }
 
-    //Custom using list elements instead of children
     const hasLoadedMoreChildren = this.props.list.length !== prevProps.list.length;
     if (hasLoadedMoreChildren) {
       var newApertureState = infiniteHelpers.recomputeApertureStateFromOptionsAndScrollTop(
@@ -307,6 +317,8 @@ var Infinite = React.createClass({
     if (isMissingVisibleRows) {
       this.onInfiniteLoad();
     }
+    
+    this.infiniteHandleScroll = _throttle(this.infiniteHandleScroll, 10);
   },
 
   componentDidMount() {
@@ -322,8 +334,6 @@ var Infinite = React.createClass({
         this.utils.setScrollTop(lowestScrollTop);
       }
     }
-    // fix some performance issues
-    this.infiniteHandleScroll = _throttle(this.infiniteHandleScroll, 10);
   },
 
   componentWillUnmount() {
@@ -334,7 +344,7 @@ var Infinite = React.createClass({
     if (this.utils.scrollShouldBeIgnored(e)) {
       return;
     }
-    this.computedProps.handleScroll(this.scrollable);
+    this.computedProps.handleScroll(ReactDOM.findDOMNode(this.refs.scrollable));
     this.handleScroll(this.utils.getScrollTop());
   },
 
@@ -410,9 +420,8 @@ var Infinite = React.createClass({
     };
   },
 
-  render(): ReactElement<any, any, any> {
+  render(): React.Element<any, any, any> {
     var displayables;
-
     if (this.computedProps.list.length > 1) {
       displayables = this.computedProps.list.slice(this.state.displayIndexStart,
                                                        this.state.displayIndexEnd + 1);
@@ -421,7 +430,7 @@ var Infinite = React.createClass({
     }
 
     var displayablesRender = displayables.map((displayable, i) => {
-      return this.props.childRender(displayable, i);
+       return this.props.childRender(displayable, i);
     });
 
     var infiniteScrollStyles = {};
@@ -443,7 +452,7 @@ var Infinite = React.createClass({
 
     var loadingSpinner = this.computedProps.infiniteLoadBeginEdgeOffset === undefined
       ? null
-      : <div ref={(c) => { this.loadingSpinner = c; }}>
+      : <div ref="loadingSpinner">
         {this.state.isInfiniteLoading ? this.computedProps.loadingSpinnerDelegate : null}
       </div>;
 
@@ -452,17 +461,17 @@ var Infinite = React.createClass({
     // topSpacer and bottomSpacer take up the amount of space that the
     // rendered elements would have taken up otherwise
     return <div className={this.computedProps.className}
-                ref={(c) => { this.scrollable = c; }}
+                ref="scrollable"
                 style={this.utils.buildScrollableStyle()}
                 onScroll={this.utils.nodeScrollListener}>
-      <div ref={(c) => { this.smoothScrollingWrapper = c; }} style={infiniteScrollStyles}>
-        <div ref={(c) => { this.topSpacer = c; }}
+      <div ref="smoothScrollingWrapper" style={infiniteScrollStyles}>
+        <div ref="topSpacer"
              style={this.buildHeightStyle(topSpacerHeight)}/>
-          {this.computedProps.displayBottomUpwards && loadingSpinner}
+        {this.computedProps.displayBottomUpwards && loadingSpinner}
           {displayablesRender}
           {loadMore}
-          {!this.computedProps.displayBottomUpwards && loadingSpinner}
-        <div ref={(c) => { this.bottomSpacer = c; }}
+        {!this.computedProps.displayBottomUpwards && loadingSpinner}
+        <div ref="bottomSpacer"
              style={this.buildHeightStyle(bottomSpacerHeight)}/>
       </div>
     </div>;
